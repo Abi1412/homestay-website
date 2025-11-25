@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Shivalaya Homestay — Layered Flow</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f8ff; --muted:#64748b; --accent:#0f62ff; --radius:14px;
+  font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial; color-scheme:light; color:#0f1724;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{margin:0;background:linear-gradient(180deg,var(--bg),#eef5ff);-webkit-font-smoothing:antialiased;padding:0}
+.container{max-width:1200px;margin:0 auto;padding:0 20px}
+
+/* TOP BAR: very large logo + very large centered title */
+header.appbar{
+  position:sticky;top:0;background:rgba(255,255,255,0.95);backdrop-filter:blur(6px);z-index:60;border-bottom:1px solid rgba(15,23,36,0.04);
+}
+.appbar .inner{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;max-width:1200px;margin:0 auto}
+.left-slot,.center-slot,.right-slot{display:flex;align-items:center}
+.left-slot{gap:14px}
+.logo-verybig{width:120px;height:120px;border-radius:18px;overflow:hidden;background:linear-gradient(135deg,var(--accent),#06b6d4);display:grid;place-items:center;box-shadow:0 18px 40px rgba(15,98,255,0.08)}
+.logo-verybig img{width:100%;height:100%;object-fit:cover;border-radius:16px}
+.site-title-verybig{font-size:48px;font-weight:800;margin-left:18px}
+.admin-btn{padding:10px 14px;border-radius:10px;border:1px solid rgba(15,23,36,0.06);background:transparent;color:var(--muted);cursor:pointer}
+
+/* Hero minimal */
+.hero{min-height:calc(100vh - 170px);display:grid;place-items:center;padding:36px 20px}
+.hero-center{text-align:center}
+.explore-btn{margin-top:22px;padding:14px 18px;border-radius:12px;border:0;background:linear-gradient(90deg,var(--accent),#06b6d4);color:white;font-weight:700;cursor:pointer;box-shadow:0 12px 30px rgba(15,98,255,0.08);font-size:16px}
+
+/* MODAL common */
+.modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.45);display:none;align-items:center;justify-content:center;z-index:200}
+.modal{width:940px;max-width:96%;background:white;border-radius:14px;padding:18px;box-shadow:0 30px 90px rgba(2,6,23,0.45);max-height:92vh;overflow:auto}
+
+/* Choices grid */
+.choices-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px}
+.place-card{display:flex;gap:12px;align-items:center;padding:14px;border-radius:10px;border:1px solid rgba(15,23,36,0.04);cursor:pointer;background:#fff;transition:transform .16s}
+.place-card:hover{transform:translateY(-6px);box-shadow:0 20px 40px rgba(15,98,255,0.06)}
+.place-thumb{width:180px;height:112px;border-radius:8px;overflow:hidden}
+.place-thumb img{width:100%;height:100%;object-fit:cover}
+
+/* Detail: page-within-page modal (includes booking form) */
+.detail-grid{display:grid;grid-template-columns:1fr 360px;gap:18px}
+.detail-hero{height:320px;border-radius:12px;overflow:hidden}
+.thumb-row{display:flex;gap:8px;margin-top:10px}
+.thumb-small{width:84px;height:60px;border-radius:6px;overflow:hidden;cursor:pointer}
+.thumb-small img{width:100%;height:100%;object-fit:cover}
+
+/* Booking area inside detail modal (right column or below) */
+.booking-section{margin-top:12px;background:#fafafa;padding:12px;border-radius:10px;border:1px solid rgba(15,23,36,0.03)}
+.date-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:8px}
+.date-btn{padding:8px;border-radius:8px;text-align:center;border:1px solid rgba(15,23,36,0.04);background:white;cursor:pointer}
+.date-btn.booked{background:linear-gradient(90deg,#fff1f2,#fff7f7);border:1px dashed #fca5a5;color:#b91c1c;cursor:not-allowed}
+.date-btn.selected{background:linear-gradient(90deg,var(--accent),#0ea5e9);color:white}
+
+/* small utilities */
+.muted{color:var(--muted)}
+@media (max-width:920px){
+  .site-title-verybig{font-size:28px}
+  .logo-verybig{width:88px;height:88px}
+  .detail-grid{grid-template-columns:1fr}
+  .date-grid{grid-template-columns:repeat(4,1fr)}
+}
+</style>
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="appbar">
+    <div class="inner">
+      <div class="left-slot">
+        <div class="logo-verybig">
+          <!-- developer note: using the uploaded file path as logo asset -->
+          <img src="/mnt/data/fbc4b2cd-0e2f-4b13-82d6-978459b40f35.png" alt="logo">
+        </div>
+      </div>
+
+      <div class="center-slot">
+        <div class="site-title-verybig">Shivalaya Homestay</div>
+      </div>
+
+      <div class="right-slot">
+        <button class="admin-btn" id="adminBtn">Admin Login</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <main>
+    <section class="hero">
+      <div class="hero-center">
+        <div style="font-size:22px;font-weight:700">Handpicked homestays in Kodaikanal & Thiruvarur</div>
+        <p class="muted" style="max-width:760px;margin:12px auto 0">Local hosts · Comfortable rooms · Warm hospitality. Click Explore to pick a place — we'll guide you step-by-step.</p>
+        <button class="explore-btn" id="exploreBtn">Explore</button>
+      </div>
+    </section>
+    <footer style="padding:36px 0;text-align:center;color:var(--muted)">Follow us: Instagram · Facebook · WhatsApp</footer>
+  </main>
+
+  <!-- ===== CHOICES MODAL (layer 1) ===== -->
+  <div id="choicesModal" class="modal-backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="choicesTitle">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h2 id="choicesTitle">Where would you like to stay?</h2>
+        <button id="closeChoices" style="background:transparent;border:0;font-size:18px;cursor:pointer;color:var(--muted)">✕</button>
+      </div>
+      <p class="muted" style="margin-top:6px">Choose one — next we will open the detail layer where you can book directly.</p>
+      <div class="choices-grid" id="choicesGrid"></div>
+    </div>
+  </div>
+
+  <!-- ===== DETAIL MODAL (layer 2) - this contains the booking form too ===== -->
+  <div id="detailModal" class="modal-backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h2 id="detailTitle">Details & Booking</h2>
+        <div style="display:flex;gap:10px;align-items:center">
+          <button id="backToChoices" style="background:transparent;border:0;cursor:pointer;color:var(--muted)">← Back</button>
+          <button id="closeDetail" style="background:transparent;border:0;cursor:pointer;color:var(--muted);font-size:18px">✕</button>
+        </div>
+      </div>
+
+      <div id="detailInner" style="margin-top:12px">
+        <!-- injected content -->
+      </div>
+    </div>
+  </div>
+
+<script>
+/* CONFIG */
+const API_BASE = "http://localhost:4001";
+/* HOMESTAYS - uses your images in homestay-frontend/images/ */
+const HOMESTAYS = [
+  {
+    id:"kodi",
+    title:"Kodaikanal Homestay",
+    location:"Kodaikanal, Tamil Nadu",
+    images:[
+      "images/kodi1.jpg","images/kodi2.jpg","images/kodi3.jpg","images/kodi4.jpg","images/kodi5.jpg",
+      "images/kodi6.jpg","images/kodi7.jpg","images/kodi8.jpg","images/kodi9.jpg","images/kodi10.jpg","images/kodi11.jpg"
+    ],
+    description:"Cozy homestay in Kodaikanal with scenic views, local food and warm hosts.",
+    owner:"Ramesh",
+    phone:"9876543210",
+    guests:"4"
+  },
+  {
+    id:"thiru",
+    title:"Thiruvarur Homestay",
+    location:"Thiruvarur, Tamil Nadu",
+    images:["images/thiru1.jpg","images/thiru2.jpg","images/thiru3.jpg"],
+    description:"Quiet homestay in Thiruvarur close to temples and markets.",
+    owner:"Sundar",
+    phone:"9123456780",
+    guests:"3"
+  }
+];
+
+let current = null;
+let selectedDate = null;
+
+/* elements */
+const exploreBtn = document.getElementById('exploreBtn');
+const choicesModal = document.getElementById('choicesModal');
+const choicesGrid = document.getElementById('choicesGrid');
+const closeChoices = document.getElementById('closeChoices');
+
+const detailModal = document.getElementById('detailModal');
+const detailInner = document.getElementById('detailInner');
+const closeDetail = document.getElementById('closeDetail');
+const backToChoices = document.getElementById('backToChoices');
+
+const adminBtn = document.getElementById('adminBtn');
+
+/* open choices modal */
+function openChoices(){
+  choicesGrid.innerHTML = '';
+  HOMESTAYS.forEach(h=>{
+    const card = document.createElement('div');
+    card.className = 'place-card';
+    card.innerHTML = `
+      <div class="place-thumb"><img src="${h.images[0]}" alt="${h.title}"></div>
+      <div>
+        <strong>${h.title}</strong>
+        <div class="muted">${h.location}</div>
+        <div class="muted" style="margin-top:8px">${h.description}</div>
+      </div>
+    `;
+    card.onclick = ()=> openDetailLayer(h.id);
+    choicesGrid.appendChild(card);
+  });
+  choicesModal.style.display = 'flex';
+  choicesModal.setAttribute('aria-hidden','false');
+  document.body.style.overflow = 'hidden';
+}
+
+/* close choices modal */
+function closeChoicesLayer(){
+  choicesModal.style.display = 'none';
+  choicesModal.setAttribute('aria-hidden','true');
+  document.body.style.overflow = '';
+}
+
+/* open detail layer (modal) */
+function openDetailLayer(placeId){
+  const h = HOMESTAYS.find(x=>x.id===placeId);
+  if(!h) return;
+  current = h;
+
+  detailInner.innerHTML = `
+    <div class="detail-grid">
+      <div>
+        <div class="detail-hero"><img src="${h.images[0]}" alt="${h.title}" style="width:100%;height:100%;object-fit:cover"></div>
+        <div class="thumb-row">
+          ${h.images.map((img,i)=>`<div class="thumb-small"><img src="${img}" data-idx="${i}" style="width:100%;height:100%;object-fit:cover"></div>`).join('')}
+        </div>
+
+        <div style="margin-top:12px;background:white;padding:12px;border-radius:10px;border:1px solid rgba(15,23,36,0.03)">
+          <h4 style="margin:0 0 8px 0">About</h4>
+          <div class="muted">${h.description}</div>
+        </div>
+
+        <div style="margin-top:12px;background:white;padding:12px;border-radius:10px;border:1px solid rgba(15,23,36,0.03)">
+          <h4 style="margin:0 0 8px 0">Map</h4>
+          <div class="muted">Map placeholder — we'll embed Google Maps later.</div>
+        </div>
+      </div>
+
+      <aside>
+        <div style="background:white;padding:12px;border-radius:10px;border:1px solid rgba(15,23,36,0.03)">
+          <div style="font-weight:800;font-size:18px">${h.title}</div>
+          <div class="muted" style="margin-bottom:8px">${h.location}</div>
+          <div style="margin-bottom:8px"><strong>Owner:</strong> <span class="muted">${h.owner}</span></div>
+          <div style="margin-bottom:8px"><strong>Phone:</strong> <span class="muted">${h.phone}</span></div>
+          <div style="margin-bottom:10px"><strong>Guests:</strong> <span class="muted">Up to ${h.guests}</span></div>
+
+          <div class="booking-section" id="bookingSection">
+            <div style="font-weight:700;margin-bottom:6px">Book this stay</div>
+            <label style="font-weight:600">Pick a date</label>
+            <div class="date-grid" id="dateGrid"></div>
+
+            <div style="margin-top:10px">
+              <label style="font-weight:600">Time (enter manually)</label>
+              <input id="timeInput" placeholder="e.g. 09:00 AM - 11:00 AM" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(15,23,36,0.06)">
+            </div>
+
+            <div style="margin-top:10px">
+              <label style="font-weight:600">Name</label>
+              <input id="nameInput" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(15,23,36,0.06)">
+            </div>
+
+            <div style="margin-top:8px;display:flex;gap:8px">
+              <div style="flex:1">
+                <label style="font-weight:600">Phone</label>
+                <input id="phoneInput" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(15,23,36,0.06)">
+              </div>
+              <div style="width:120px">
+                <label style="font-weight:600">Guests</label>
+                <select id="guestsInput" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(15,23,36,0.06)"><option>1</option><option>2</option><option>3</option><option>4</option></select>
+              </div>
+            </div>
+
+            <div style="margin-top:8px">
+              <label style="font-weight:600">Address</label>
+              <textarea id="addressInput" rows="2" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(15,23,36,0.06)"></textarea>
+            </div>
+
+            <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+              <button id="confirmBtn" style="padding:10px 12px;border-radius:10px;border:0;background:linear-gradient(90deg,var(--accent),#06b6d4);color:white;cursor:pointer">Confirm booking</button>
+              <button id="cancelBtn" style="padding:10px 12px;border-radius:10px;border:1px solid rgba(15,23,36,0.06);background:transparent;cursor:pointer">Cancel</button>
+              <div id="bookingStatus" class="muted" style="margin-left:8px"></div>
+            </div>
+          </div>
+
+        </div>
+      </aside>
+    </div>
+  `;
+
+  // thumbnail click to change main image
+  detailInner.querySelectorAll('.thumb-small img').forEach(img => {
+    img.addEventListener('click', (ev)=>{
+      const src = ev.target.src;
+      const big = detailInner.querySelector('.detail-hero img');
+      if(big) big.src = src;
+    });
+  });
+
+  // render date grid for this place
+  renderDateGridFor(h.id);
+
+  // wire cancel and confirm
+  detailInner.querySelector('#cancelBtn').addEventListener('click', ()=> {
+    closeDetailLayer();
+  });
+
+  detailInner.querySelector('#confirmBtn').addEventListener('click', async ()=>{
+    const date = selectedDate;
+    const time = document.getElementById('timeInput').value.trim();
+    const name = document.getElementById('nameInput').value.trim();
+    const phone = document.getElementById('phoneInput').value.trim();
+    const guests = document.getElementById('guestsInput').value;
+    const address = document.getElementById('addressInput').value.trim();
+    const statusEl = document.getElementById('bookingStatus');
+    statusEl.textContent = '';
+
+    if(!date){ statusEl.textContent = 'Pick a date'; return; }
+    if(!time){ statusEl.textContent = 'Enter time manually'; return; }
+    if(!name || !phone){ statusEl.textContent = 'Enter name and phone'; return; }
+
+    statusEl.textContent = 'Sending booking...';
+    try{
+      const payload = {
+        homestay_id: h.id,
+        date: date,
+        time_slot: time,
+        guest_name: name,
+        phone: phone,
+        address: address || null,
+        guests: Number(guests)
+      };
+      const resp = await fetch(`${API_BASE}/api/bookings`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(payload)
+      });
+      const data = await resp.json();
+      if(!resp.ok){
+        statusEl.textContent = data.error || 'Booking failed';
+        setTimeout(()=>renderDateGridFor(h.id),600);
+        return;
+      }
+      statusEl.textContent = 'Booked! Thank you.';
+      setTimeout(()=>{ closeDetailLayer(); closeChoicesLayer(); }, 900);
+    }catch(e){
+      console.error(e);
+      statusEl.textContent = 'Network error — check backend';
+    }
+  });
+
+  // open modal layers
+  closeChoicesLayer();
+  detailModal.style.display = 'flex';
+  detailModal.setAttribute('aria-hidden','false');
+  document.body.style.overflow = 'hidden';
+}
+
+/* close detail */
+function closeDetailLayer(){
+  detailModal.style.display = 'none';
+  detailModal.setAttribute('aria-hidden','true');
+  document.body.style.overflow = '';
+  selectedDate = null;
+}
+
+/* render date grid and disable booked */
+async function renderDateGridFor(homestayId){
+  const grid = document.getElementById('dateGrid');
+  grid.innerHTML = '<div style="grid-column:1/-1;color:var(--muted)">Loading dates…</div>';
+  let booked = [];
+  try{
+    const res = await fetch(`${API_BASE}/api/bookings?homestay_id=${homestayId}`);
+    if(res.ok){
+      const d = await res.json();
+      booked = (d.rows || d).map(r=>r.date);
+    }
+  }catch(e){
+    booked = [];
+  }
+  grid.innerHTML = '';
+  const today = new Date();
+  const DAYS = 30;
+  selectedDate = null;
+  for(let i=0;i<DAYS;i++){
+    const d = new Date(today);
+    d.setDate(d.getDate()+i);
+    const ymd = d.toISOString().slice(0,10);
+    const btn = document.createElement('button');
+    btn.className = 'date-btn';
+    btn.textContent = `${d.getDate()} ${d.toLocaleString('default',{month:'short'})}`;
+    btn.style.minHeight = '36px';
+    if(booked.includes(ymd)){
+      btn.classList.add('booked'); btn.disabled = true;
+    } else {
+      btn.addEventListener('click', ()=> {
+        grid.querySelectorAll('.date-btn').forEach(x=>x.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedDate = ymd;
+      });
+    }
+    grid.appendChild(btn);
+  }
+}
+
+/* wire controls */
+exploreBtn.addEventListener('click', openChoices);
+closeChoices.addEventListener('click', closeChoicesLayer);
+closeDetail.addEventListener('click', closeDetailLayer);
+backToChoices.addEventListener('click', ()=>{ closeDetailLayer(); openChoices(); });
+
+adminBtn.addEventListener('click', ()=> {
+  const key = prompt('Enter admin key');
+  if(!key) return;
+  fetch(`${API_BASE}/api/bookings`, { headers: { 'x-admin-key': key } })
+    .then(r => r.json()).then(d => {
+      const rows = d.rows || d;
+      if(!rows || rows.length===0) return alert('No bookings');
+      alert(rows.map(r=>`${r.homestay_id} • ${r.date} • ${r.time_slot || '-'} • ${r.guest_name}`).join('\\n'));
+    }).catch(()=>alert('Unable to fetch bookings'));
+});
+</script>
+</body>
+</html>
